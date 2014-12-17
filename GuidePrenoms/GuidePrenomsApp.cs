@@ -197,7 +197,7 @@ namespace GuidePrenoms
             if (top10)                              // On affiche le menu de la bonne fonctionnalité
             {
                 top10Affichage();
-                Console.WriteLine("Rentrez l'année du top 10 (1900 - 2013) : ";
+                Console.WriteLine("Rentrez l'année du top 10 (1900 - 2013) : ");
             }
             else
             {
