@@ -251,8 +251,9 @@ namespace GuidePrenoms
 
                     commencerPar = prenomCommencePar(prenomsAnnee, prenom);
 
-                    foreach (Prenom pr in commencerPar)
-                        Console.Write("{0}, ", pr.prenom);
+                    if (commencerPar != null)
+                        foreach (Prenom pr in commencerPar)
+                            Console.Write("{0}, ", pr.prenom);
 
                     Console.WriteLine();
                 }
@@ -287,7 +288,7 @@ namespace GuidePrenoms
                         premiereValeur = false;
                     else
                     {
-                        messageErreur("La date n'est pas comprise entre " + ANNEEMIN + " et " + (DateTime.Now.Year - 1));
+                        messageErreur("La date n'est pas comprise entre " + ANNEEMIN + " et " + 2013);
                     }
                     annee = int.Parse(Console.ReadLine());
                 }
@@ -316,12 +317,17 @@ namespace GuidePrenoms
                 }
             }
 
-            resultat = new Prenom[nb];
-
-            for (int i = 0; i < nb; ++i)
+            if (nb != -1)
             {
-                resultat[i] = resultatTmp[i];
+                resultat = new Prenom[nb];
+
+                for (int i = 0; i < nb; ++i)
+                {
+                    resultat[i] = resultatTmp[i];
+                }
             }
+            else
+                resultat = null;
 
             return resultat;
         }
