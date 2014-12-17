@@ -190,7 +190,7 @@ namespace GuidePrenoms
         public static Prenom[] topXNaissance(Prenom[] prenoms, int top, bool top10)
         {
             int i = 0, indexResultat = 0;           // Index pour parcourir les tableaux
-            Prenom[] resultat = new Prenom[top];     // Tableau de Prenom contenant les résultats
+            Prenom[] resultat = new Prenom[top];    // Tableau de Prenom contenant les résultats
 
             Console.Clear();                        // On vide la console
 
@@ -207,7 +207,8 @@ namespace GuidePrenoms
 
             int annee = rentrerAnnee();             // On rentre l'année
 
-            /* S'il n'y a pas eu d'erreur, on continue la fonctionnalité */
+            /* S'il n'y a pas eu d'erreur, on continue la fonctionnalité. 
+             * Les prénoms du top X sont stockés dans resultat, et renvoyés */
             if (annee != -1)
             {
                 while (i < prenoms.Length && indexResultat < resultat.Length)
@@ -228,20 +229,32 @@ namespace GuidePrenoms
 
         public static void nbNaissanceEtOrdreAnnee(Prenom[] prenoms)
         {
-            Prenom[] prenomsAnnee = topXNaissance(prenoms, 100, false);
+            Prenom[] prenomsAnnee = topXNaissance(prenoms, 100, false), commencerPar;
             bool premierPassage = true;
             Prenom p = new Prenom() { annee = 0, prenom = null, nombre = 0, ordre = 0 };
-            string prenom;
+            string prenom = "";
 
             Console.WriteLine("Rentrez le prénom souhaité : ");
 
+            /* Ici, on va demander à l'utilisateur de rentrer un prénom,
+             * afin d'avoir les informations sur celui-ci pour l'année donnée.
+             * Si celui-ci n'existe pas, on affiche la liste des prénoms
+             * commençant par la chaîne rentrée */
             do
             {
                 if (!premierPassage)
                 {
                     Console.Clear();
                     nbNaissanceEtOrdreAnneeAffichage();
-                    messageErreur("Le prénom ne se trouve pas dans la liste.\nVeuillez en choisir un autre : ");
+                    Console.WriteLine("Ce prénom ne se trouve pas dans la liste.\n" + 
+                                        "Voici les prénoms commençant par {0} : ", prenom);
+
+                    commencerPar = prenomCommencePar(prenomsAnnee, prenom);
+
+                    foreach (Prenom pr in commencerPar)
+                        Console.Write("{0}, ", pr.prenom);
+
+                    Console.WriteLine();
                 }
                 else
                     premierPassage = false;
@@ -287,6 +300,30 @@ namespace GuidePrenoms
             }
 
             return annee;
+        }
+
+        public static Prenom[] prenomCommencePar(Prenom[] prenoms, string str)
+        {
+            Prenom[] resultatTmp = new Prenom[1000], resultat;
+            int nb = -1;
+
+            foreach (Prenom p in prenoms)
+            {
+                if (p.prenom.StartsWith(str))
+                {
+                    ++nb;
+                    resultatTmp[nb] = p;
+                }
+            }
+
+            resultat = new Prenom[nb];
+
+            for (int i = 0; i < nb; ++i)
+            {
+                resultat[i] = resultatTmp[i];
+            }
+
+            return resultat;
         }
         #endregion
 
