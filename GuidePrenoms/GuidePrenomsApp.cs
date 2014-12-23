@@ -303,6 +303,31 @@ namespace GuidePrenoms
             return annee;
         }
 
+        /* Réécriture du StartsWith(string), méthode disponible pour les types string
+         * str1 : morceau de chaîne à comparer
+         * str2 : chaîne complète */
+        public static bool startsWith(string str1, string str2)
+        {
+            bool res = true;
+            int i = 0;
+
+            if (!(str1 == null || str2 == null))
+            {
+                if (str1.Length > str2.Length)
+                    return false;
+                else
+                    while (i < str1.Length && res)
+                    {
+                        if (str1[i] != str2[i])
+                            res = false;
+                        ++i;
+                    }
+                return res;
+            }
+            else
+                return false;
+        }
+
         public static Prenom[] prenomCommencePar(Prenom[] prenoms, string str)
         {
             Prenom[] resultatTmp = new Prenom[1000], resultat;
@@ -310,7 +335,7 @@ namespace GuidePrenoms
 
             foreach (Prenom p in prenoms)
             {
-                if (p.prenom.StartsWith(str))
+                if (startsWith(str, p.prenom))   //p.prenom.StartsWith(str)
                 {
                     ++nb;
                     resultatTmp[nb] = p;
@@ -348,12 +373,12 @@ namespace GuidePrenoms
 
                 switch (c)
                 {
-                    case (char)MODE.AFFICHAGE:
+                    case (char) MODE.AFFICHAGE:
                         afficherPrenoms(prenoms);
                         finFonctionnalité();
                         break;
 
-                    case (char)MODE.TOP10:
+                    case (char) MODE.TOP10:
                         topXNaissance(prenoms, 10, true);
                         finFonctionnalité();
                         break;
@@ -363,7 +388,7 @@ namespace GuidePrenoms
                         finFonctionnalité();
                         break;
 
-                    case (char)MODE.QUITTER:
+                    case (char) MODE.QUITTER:
                         quitter = true;
                         break;
 
