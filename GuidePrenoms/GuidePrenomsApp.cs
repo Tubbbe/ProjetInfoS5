@@ -21,6 +21,7 @@ namespace GuidePrenoms
             AFFICHAGE = '1',
             TOP10 = '2',
             NAISSANCEETORDREANNEE = '3',
+            NAISSANCEETORDREPERIODE = '4',
             QUITTER = 'q'
         }
         #endregion
@@ -128,25 +129,31 @@ namespace GuidePrenoms
             Console.WriteLine("===============================================================================");
             Console.Write("*");
             Console.ForegroundColor = ConsoleColor.White;
-            Console.Write(@" Afficher les prénoms                                 -> {0}                   ",
+            Console.Write(@" Afficher les prénoms                                   -> {0}                 ",
                                 (char)MODE.AFFICHAGE);
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("*");
             Console.Write("*");
             Console.ForegroundColor = ConsoleColor.White;
-            Console.Write(@" Afficher le top 10 d'une année                       -> {0}                   ",
+            Console.Write(@" Afficher le top 10 d'une année                         -> {0}                 ",
                                 (char)MODE.TOP10);
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("*");
             Console.Write("*");
             Console.ForegroundColor = ConsoleColor.White;
-            Console.Write(@" Nombre de naissance et ordre d'un prénom d'une année -> {0}                   ",
+            Console.Write(@" Nombre de naissance et ordre d'un prénom d'une année   -> {0}                 ",
                                 (char)MODE.NAISSANCEETORDREANNEE);
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("*");
             Console.Write("*");
             Console.ForegroundColor = ConsoleColor.White;
-            Console.Write(@" Quitter                                              -> {0}                   ",
+            Console.Write(@" Nombre de naissance et ordre d'un prénom d'une période -> {0}                 ",
+                                (char)MODE.NAISSANCEETORDREPERIODE);
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("*");
+            Console.Write("*");
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.Write(@" Quitter                                                -> {0}                 ",
                                 (char)MODE.QUITTER);
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("*");
@@ -175,6 +182,15 @@ namespace GuidePrenoms
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("===============================================================================");
             Console.WriteLine("*            NOMBRE DE NAISSANCE ET ORDRE D'UN PRENOM D'UNE ANNEE             *");
+            Console.WriteLine("===============================================================================");
+            Console.ForegroundColor = ConsoleColor.White;
+        }
+
+        public static void nbNaissanceEtOrdrePeriodeAffichage()
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("===============================================================================");
+            Console.WriteLine("*           NOMBRE DE NAISSANCE ET ORDRE D'UN PRENOM D'UNE PERIODE            *");
             Console.WriteLine("===============================================================================");
             Console.ForegroundColor = ConsoleColor.White;
         }
@@ -229,51 +245,73 @@ namespace GuidePrenoms
 
         public static void nbNaissanceEtOrdreAnnee(Prenom[] prenoms)
         {
-            Prenom[] prenomsAnnee = topXNaissance(prenoms, 100, false), commencerPar;
-            bool premierPassage = true;
-            Prenom p = new Prenom() { annee = 0, prenom = null, nombre = 0, ordre = 0 };
-            string prenom = "";
+            rechercherPrenom(topXNaissance(prenoms, 100, false), false);
+        }
 
-            Console.WriteLine("Rentrez le prénom souhaité : ");
+        public static void nbNaissanceEtOrdrePeriode(Prenom[] prenoms)
+        {
+            nbNaissanceEtOrdrePeriodeAffichage();
 
-            /* Ici, on va demander à l'utilisateur de rentrer un prénom,
-             * afin d'avoir les informations sur celui-ci pour l'année donnée.
-             * Si celui-ci n'existe pas, on affiche la liste des prénoms
-             * commençant par la chaîne rentrée */
-            do
+            Prenom[] prenomsPeriodeTmp, prenomsPeriode;
+            int cpt = 0, i = 0, anneeD, anneeF;
+
+            Console.WriteLine("Date de début :");
+            anneeD = rentrerAnnee();
+
+            Console.WriteLine("Date de fin : ");
+            anneeF = rentrerAnnee();
+
+            if (anneeD > anneeF)
+                echanger(ref anneeD, ref anneeF);
+
+            if (anneeD != -1 && anneeF != -1)
             {
-                if (!premierPassage)
+                prenomsPeriodeTmp = new Prenom[(anneeF - anneeD + 1) * 100];
+
+                foreach (Prenom p in prenoms)
                 {
-                    Console.Clear();
-                    nbNaissanceEtOrdreAnneeAffichage();
-                    Console.WriteLine("Ce prénom ne se trouve pas dans la liste.\n" + 
-                                        "Voici les prénoms commençant par {0} : ", prenom);
-
-                    commencerPar = prenomCommencePar(prenomsAnnee, prenom);
-
-                    if (commencerPar != null)
-                        foreach (Prenom pr in commencerPar)
-                            Console.Write("{0}, ", pr.prenom);
-
-                    Console.WriteLine();
+                    if (p.annee >= anneeD && p.annee <= anneeF)
+                        if (!containsPrenom(prenomsPeriodeTmp, p))
+                            prenomsPeriodeTmp[cpt++] = p;
+                        else
+                            ajouterNombreAuPrenom(prenomsPeriodeTmp, p.prenom, p.nombre);
                 }
-                else
-                    premierPassage = false;
 
-                prenom = Console.ReadLine().ToUpper();
+                prenomsPeriode = new Prenom[cpt];   // On stocke dans un autre tableau pour enlever les cases inutiles
 
-                for (int i = 0; i < prenomsAnnee.Length; ++i)
-                    if (prenomsAnnee[i].prenom.Equals(prenom))
-                        p = prenomsAnnee[i];
+                trierPrenomsParNombre(prenomsPeriodeTmp);
+
+                for (i = 0; i < prenomsPeriode.Length; ++i)
+                {
+                    prenomsPeriode[i] = prenomsPeriodeTmp[i];
+                    prenomsPeriode[i].ordre = i + 1;
+                    prenomsPeriode[i].annee = 0;
+                }
+
+                rechercherPrenom(prenomsPeriode, true);
             }
-            while (p.prenom == null);
-
-            Console.WriteLine("\n\n{0} est le top {1} de l'année {2} !\n" +
-                                "Il a été donné {3} fois cette année-là.\n", prenom, p.ordre,
-                                                                            p.annee, p.nombre);
         }
         #endregion
         #region Fonctions autres
+        /* Permet de savoir si l'utilisateur veut recommencer la fonctionnalité
+         * ou pas */
+        public static bool recommencerFonctionnalité()
+        {
+            char c;
+            Console.WriteLine("Voulez-vous faire une nouvelle recherche ? [y/n]");
+
+            do
+                c = Console.ReadKey().KeyChar;
+            while (c != 'y' && c != 'n' && c != 'Y' && c != 'N');
+
+            if (c == 'y' || c == 'Y')
+                return true;
+            else
+                return false;
+        }
+
+
+        /* Fonction permettant de rentrer une année */
         public static int rentrerAnnee()
         {
             int annee;
@@ -303,6 +341,57 @@ namespace GuidePrenoms
             return annee;
         }
 
+        /* Ici, on va demander à l'utilisateur de rentrer un prénom,
+         * afin d'avoir les informations sur celui-ci pour l'année donnée.
+         * Si celui-ci n'existe pas, on affiche la liste des prénoms
+         * commençant par la chaîne rentrée */
+        public static void rechercherPrenom(Prenom[] prenoms, bool periode)
+        {
+            Prenom p = new Prenom() { annee = 0, prenom = null, nombre = 0, ordre = 0 };
+            bool premierPassage = true;
+            Prenom[] commencerPar;
+            string prenom = "";
+
+            Console.WriteLine("Rentrez le prénom souhaité : ");
+
+            do
+            {
+                if (!premierPassage)
+                {
+                    Console.Clear();
+                    nbNaissanceEtOrdreAnneeAffichage();
+                    Console.WriteLine("Ce prénom ne se trouve pas dans la liste.\n" +
+                                        "Voici les prénoms commençant par {0} : ", prenom);
+
+                    commencerPar = prenomCommencePar(prenoms, prenom);
+
+                    if (commencerPar != null)
+                        foreach (Prenom pr in commencerPar)
+                            Console.Write("{0}, ", pr.prenom);
+
+                    Console.WriteLine();
+                }
+                else
+                    premierPassage = false;
+
+                prenom = Console.ReadLine().ToUpper();
+
+                for (int i = 0; i < prenoms.Length; ++i)
+                    if (prenoms[i].prenom.Equals(prenom))
+                        p = prenoms[i];
+            }
+            while (p.prenom == null);
+
+            if (periode)
+                Console.WriteLine("\n\n{0} est le top {1} de la période donnée !\n" +
+                                    "Il a été donné {3} fois.\n", p.prenom, p.ordre,
+                                                                            p.annee, p.nombre);
+            else
+                Console.WriteLine("\n\n{0} est le top {1} de l'année {2} !\n" +
+                                    "Il a été donné {3} fois cette année-là.\n", p.prenom, p.ordre,
+                                                                            p.annee, p.nombre);
+        }
+
         /* Réécriture du StartsWith(string), méthode disponible pour les types string
          * str1 : morceau de chaîne à comparer
          * str2 : chaîne complète */
@@ -328,6 +417,21 @@ namespace GuidePrenoms
                 return false;
         }
 
+        /* Réécriture du Contains(string), méthode disponible pour les tableaux
+         * prenoms : tableau contenant les prénoms
+         * prenom : prénom */
+        public static bool containsPrenom(Prenom[] prenoms, Prenom prenom)
+        {
+            bool res = false;
+            int i = 0;
+            
+            if (prenom.prenom != null)
+                while (i < prenoms.Length && !res)
+                    if (prenom.prenom.Equals(prenoms[i++].prenom))
+                        res = true;
+            return res;
+        }
+
         public static Prenom[] prenomCommencePar(Prenom[] prenoms, string str)
         {
             Prenom[] resultatTmp = new Prenom[1000], resultat;
@@ -337,16 +441,15 @@ namespace GuidePrenoms
             {
                 if (startsWith(str, p.prenom))   //p.prenom.StartsWith(str)
                 {
-                    ++nb;
-                    resultatTmp[nb] = p;
+                    resultatTmp[++nb] = p;
                 }
             }
 
             if (nb != -1)
             {
-                resultat = new Prenom[nb];
+                resultat = new Prenom[nb + 1];
 
-                for (int i = 0; i < nb; ++i)
+                for (int i = 0; i < nb + 1; ++i)
                 {
                     resultat[i] = resultatTmp[i];
                 }
@@ -355,6 +458,46 @@ namespace GuidePrenoms
                 resultat = null;
 
             return resultat;
+        }
+
+        public static void echanger(ref int v1, ref int v2)
+        {
+            int vT = v1;
+            v1 = v2;
+            v2 = vT;
+        }
+
+        public static void ajouterNombreAuPrenom(Prenom[] prenoms, string prenom, int nombre)
+        {
+            int i = 0;
+            bool ok = false;
+
+            while (i < prenoms.Length && !ok)
+            {
+                if (prenom.Equals(prenoms[i].prenom))
+                    prenoms[i].nombre += nombre;
+                ++i;
+            }
+        }
+
+        public static void trierPrenomsParNombre(Prenom[] prenoms)
+        {
+            bool ok = false;
+
+            while (!ok)
+            {
+                ok = true;
+                for (int i = 1; i < prenoms.Length; ++i)
+                {
+                    if (prenoms[i - 1].nombre < prenoms[i].nombre)
+                    {
+                        Prenom p = prenoms[i];
+                        prenoms[i] = prenoms[i - 1];
+                        prenoms[i - 1] = p;
+                        ok = false;
+                    }
+                }
+            }
         }
         #endregion
 
@@ -374,17 +517,30 @@ namespace GuidePrenoms
                 switch (c)
                 {
                     case (char) MODE.AFFICHAGE:
-                        afficherPrenoms(prenoms);
+                        do
+                            afficherPrenoms(prenoms);
+                        while (recommencerFonctionnalité());
                         finFonctionnalité();
                         break;
 
                     case (char) MODE.TOP10:
-                        topXNaissance(prenoms, 10, true);
+                        do
+                            topXNaissance(prenoms, 10, true);
+                        while (recommencerFonctionnalité());
                         finFonctionnalité();
                         break;
 
                     case (char) MODE.NAISSANCEETORDREANNEE:
-                        nbNaissanceEtOrdreAnnee(prenoms);
+                        do
+                            nbNaissanceEtOrdreAnnee(prenoms);
+                        while (recommencerFonctionnalité());
+                        finFonctionnalité();
+                        break;
+
+                    case (char) MODE.NAISSANCEETORDREPERIODE:
+                        do
+                            nbNaissanceEtOrdrePeriode(prenoms);
+                        while (recommencerFonctionnalité());
                         finFonctionnalité();
                         break;
 
