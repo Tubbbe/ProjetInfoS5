@@ -102,6 +102,7 @@ namespace GuidePrenoms
         }
         #endregion
         #region Affichage tableaux
+        /* Méthode permettant d'afficher les prénoms du tableau */
         public static void afficherPrenoms(Prenom[] prenoms)
         {
             for (int i = 0; i < prenoms.Length; ++i)
@@ -112,6 +113,7 @@ namespace GuidePrenoms
                                 prenoms[i].ordre);
         }
 
+        /* Méthode permettant d'afficher les prénoms du tableau sous la forme "TOP X" */
         public static void afficherPrenomsTop10(Prenom[] prenoms)
         {
             for (int i = 0; i < prenoms.Length; ++i)
@@ -121,6 +123,7 @@ namespace GuidePrenoms
         }
         #endregion
         #region Affichage console
+        /* Méthode gérant l'affichage du menu principal */
         public static void menuPrincipal()
         {
             Console.ForegroundColor = ConsoleColor.Green;
@@ -161,6 +164,7 @@ namespace GuidePrenoms
             Console.ForegroundColor = ConsoleColor.White;
         }
 
+        /* Méthode permettant de gérer la fin d'une fonctionnalité */
         public static void finFonctionnalité()
         {
             Console.WriteLine("Appuyez sur une touche pour revenir au menu principal");
@@ -168,6 +172,7 @@ namespace GuidePrenoms
             Console.Clear();
         }
 
+        /* Méthode permettant de gérer l'affichage de la fonctionnalité */
         public static void top10Affichage()
         {
             Console.ForegroundColor = ConsoleColor.Green;
@@ -177,6 +182,7 @@ namespace GuidePrenoms
             Console.ForegroundColor = ConsoleColor.White;
         }
 
+        /* Méthode permettant de gérer l'affichage de la fonctionnalité */
         public static void nbNaissanceEtOrdreAnneeAffichage()
         {
             Console.ForegroundColor = ConsoleColor.Green;
@@ -186,6 +192,7 @@ namespace GuidePrenoms
             Console.ForegroundColor = ConsoleColor.White;
         }
 
+        /* Méthode permettant de gérer l'affichage de la fonctionnalité */
         public static void nbNaissanceEtOrdrePeriodeAffichage()
         {
             Console.ForegroundColor = ConsoleColor.Green;
@@ -195,6 +202,7 @@ namespace GuidePrenoms
             Console.ForegroundColor = ConsoleColor.White;
         }
 
+        /* Méthode permettant de gérer l'affichage d'un message d'erreur */
         public static void messageErreur(string err)
         {
             Console.ForegroundColor = ConsoleColor.Red;
@@ -203,6 +211,8 @@ namespace GuidePrenoms
         }
         #endregion
         #region Fonctionnalités
+        /* Fonction permettant de gérer le TOP X de naissances sur une année donnée, 
+         * et qui retourne les résultats sous forme de tableau */
         public static Prenom[] topXNaissance(Prenom[] prenoms, int top, bool top10)
         {
             int i = 0, indexResultat = 0;           // Index pour parcourir les tableaux
@@ -243,11 +253,17 @@ namespace GuidePrenoms
             return resultat;
         }
 
+        /* Méthode permettant de donner des informations sur un prénom dans l'année
+         * souhaitée */
         public static void nbNaissanceEtOrdreAnnee(Prenom[] prenoms)
         {
+            /* Ici, on a seulement besoin d'utiliser la recherche d'un prénom sur 
+             * le top 100 d'une année */
             rechercherPrenom(topXNaissance(prenoms, 100, false), false);
         }
 
+        /* Méthode permettant de donner des informations sur un prénom dans la période
+         * souhaitée */
         public static void nbNaissanceEtOrdrePeriode(Prenom[] prenoms)
         {
             nbNaissanceEtOrdrePeriodeAffichage();
@@ -268,6 +284,9 @@ namespace GuidePrenoms
             {
                 prenomsPeriodeTmp = new Prenom[(anneeF - anneeD + 1) * 100];
 
+                /* Pour chaque Prenom du tableau, s'il n'existe pas dans le tableau
+                 * prenomsPeriodeTmp, on le rajoute. Sinon, on ajoute le nombre de fois
+                 * que le prénom a été donné une autre année */
                 foreach (Prenom p in prenoms)
                 {
                     if (p.annee >= anneeD && p.annee <= anneeF)
@@ -279,8 +298,10 @@ namespace GuidePrenoms
 
                 prenomsPeriode = new Prenom[cpt];   // On stocke dans un autre tableau pour enlever les cases inutiles
 
-                trierPrenomsParNombre(prenomsPeriodeTmp);
+                trierPrenomsParNombre(prenomsPeriodeTmp);   // On trie le tableau par ordre croissant sur prenom.nombre
 
+                /* On stocke les données dans le nouveau tableau, en redéfinissant l'ordre 
+                 * et l'année (0) */
                 for (i = 0; i < prenomsPeriode.Length; ++i)
                 {
                     prenomsPeriode[i] = prenomsPeriodeTmp[i];
@@ -288,7 +309,7 @@ namespace GuidePrenoms
                     prenomsPeriode[i].annee = 0;
                 }
 
-                rechercherPrenom(prenomsPeriode, true);
+                rechercherPrenom(prenomsPeriode, true);     // On peut chercher un prénom dans ce tableau
             }
         }
         #endregion
@@ -417,7 +438,8 @@ namespace GuidePrenoms
                 return false;
         }
 
-        /* Réécriture du Contains(string), méthode disponible pour les tableaux
+        /* Réécriture du Contains(string), méthode disponible pour les tableaux de string,
+         * mais adaptée à notre cas
          * prenoms : tableau contenant les prénoms
          * prenom : prénom */
         public static bool containsPrenom(Prenom[] prenoms, Prenom prenom)
@@ -432,6 +454,8 @@ namespace GuidePrenoms
             return res;
         }
 
+        /* Fonction qui renvoie la liste des prénoms qui commencent
+         * par chaîne de caractère donnée */
         public static Prenom[] prenomCommencePar(Prenom[] prenoms, string str)
         {
             Prenom[] resultatTmp = new Prenom[1000], resultat;
@@ -460,6 +484,7 @@ namespace GuidePrenoms
             return resultat;
         }
 
+        /* Méthode permettant d'échanger la valeur de deux entiers */
         public static void echanger(ref int v1, ref int v2)
         {
             int vT = v1;
@@ -467,6 +492,8 @@ namespace GuidePrenoms
             v2 = vT;
         }
 
+        /* Méthode permettant d'ajouter le nombre de fois qu'a été donné un prénom
+         * d'une année au nombre de fois qu'à été donné un prénom dans une période donnée */
         public static void ajouterNombreAuPrenom(Prenom[] prenoms, string prenom, int nombre)
         {
             int i = 0;
@@ -480,6 +507,8 @@ namespace GuidePrenoms
             }
         }
 
+        /* Méthode permettant de trier les prénoms selon le nombre de fois
+         * qu'ils ont été donné */
         public static void trierPrenomsParNombre(Prenom[] prenoms)
         {
             bool ok = false;
@@ -512,34 +541,45 @@ namespace GuidePrenoms
                 menuPrincipal();
                 Console.WriteLine("\nChoisissez ce que vous voulez faire :");
                 c = char.ToLower(Console.ReadKey().KeyChar);
-                Console.Clear();
 
                 switch (c)
                 {
                     case (char) MODE.AFFICHAGE:
                         do
+                        {
+                            Console.Clear();
                             afficherPrenoms(prenoms);
+                        }
                         while (recommencerFonctionnalité());
                         finFonctionnalité();
                         break;
 
                     case (char) MODE.TOP10:
                         do
+                        {
+                            Console.Clear();
                             topXNaissance(prenoms, 10, true);
+                        }
                         while (recommencerFonctionnalité());
                         finFonctionnalité();
                         break;
 
                     case (char) MODE.NAISSANCEETORDREANNEE:
                         do
+                        {
+                            Console.Clear();
                             nbNaissanceEtOrdreAnnee(prenoms);
+                        }
                         while (recommencerFonctionnalité());
                         finFonctionnalité();
                         break;
 
                     case (char) MODE.NAISSANCEETORDREPERIODE:
                         do
+                        {
+                            Console.Clear();
                             nbNaissanceEtOrdrePeriode(prenoms);
+                        }
                         while (recommencerFonctionnalité());
                         finFonctionnalité();
                         break;
