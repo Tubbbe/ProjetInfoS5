@@ -446,7 +446,7 @@ namespace GuidePrenoms
 
             string prenom;
             int anneeD, anneeF, cptPeriodeAvant = 0, cptPeriode = 0;
-            double moyennePeriodeAvant = 0, moyennePeriode = 0, variance = 0, ecartType, ecartMoyenne;
+            double moyennePeriodeAvant = 0, moyennePeriode = 0, variance = 0, ecartType = 0, ecartMoyenne = 0;
 
             Console.WriteLine("Date de début ({0} - {1}) : ", anneeMin + 1, anneeMax);
             anneeD = rentrerAnnee(anneeMin, anneeMax);
@@ -488,6 +488,10 @@ namespace GuidePrenoms
             variance = (variance - Math.Pow(moyennePeriodeAvant, 2) * cptPeriodeAvant) / cptPeriodeAvant;
             ecartType = Math.Sqrt(variance);
 
+
+            if (moyennePeriodeAvant == 0)
+                ecartType = 0;
+
             ecartMoyenne = moyennePeriode - moyennePeriodeAvant;
 
             if (ecartMoyenne <= -2 * ecartType)
@@ -500,6 +504,8 @@ namespace GuidePrenoms
                 Console.WriteLine("Ce prénom est en vogue");
             else if (2 * ecartType <= ecartMoyenne)
                 Console.WriteLine("Bravo, ce prénom explose !!!!! :D");
+            else
+                messageErreur("Aucune information n'est disponible pour ce prénom");
         }
 
         public static void prenomPlusMoinsDonne(Prenom[] prenoms, int anneeMin, int anneeMax)
