@@ -9,13 +9,6 @@ namespace GuidePrenoms
 {
     class GuidePrenomsApp
     {
-        // TODO : Enlever cette constante, et créer une 2e variable pour l'année la plus élevée du fichier
-        public const int ANNEEMIN = 1900;
-
-        /* Mettez entre "" l'URL du fichier */
-        public const string URL = @"C:\Users\Alexandre\Desktop\Programmation\C#\GuidePrenoms\GuidePrenoms\prenoms_bordeaux.txt";
-        //public const string URL = @"C:\Users\amonge.ENSC\Desktop\Cours & TPs\S5\Info\GuidePrenoms\GuidePrenoms\prenoms_bordeaux.txt";
-
         #region Enums
         public enum MODE
         {
@@ -23,6 +16,9 @@ namespace GuidePrenoms
             TOP10PERIODE = '2',
             NAISSANCEETORDREANNEE = '3',
             NAISSANCEETORDREPERIODE = '4',
+            TENDANCE = '5',
+            PRENOMPLUSMOINSDONNE = '6',
+            MOTEURRECHERCHEPRENOM = '7',
             QUITTER = 'q'
         }
         #endregion
@@ -38,22 +34,50 @@ namespace GuidePrenoms
         #region Lecture du fichier
         /* Cette méthode sera appelée une seule fois dans le programme. Une fois les données stockées
          * dans un tableau, on manipulera le tableau à la place du fichier. */
-        public static Prenom[] lectureFichier()
+        public static Prenom[] lectureFichier(string adresse, string nomFichier, ref int anneeMin, ref int anneeMax)
         {
-            Prenom[] prenoms = new Prenom[100 * 114];           // Tableau contenant les données
-            string fichier = URL;                               // URL du fichier texte
+            Prenom[] prenoms;           // Tableau contenant les données
 
             try
             {
-                StreamReader sr = new StreamReader(fichier, Encoding.Unicode);  // On créé notre lecteur
-                string ligne = sr.ReadLine(), mot = "";
+                StreamReader sr1 = new StreamReader(adresse + "\\" + nomFichier + ".txt", Encoding.Unicode);  // On créé notre lecteur
+                StreamReader sr2 = new StreamReader(adresse + "\\" + nomFichier + ".txt", Encoding.Unicode);
+                string ligne = sr1.ReadLine(), mot = "", anneeMinMax = "";
                 int i = 0, j = 0, indexDonnees = 0;
                 string[] donnees = new string[4];   // Va contenir le mot compris entre deux tabulations
 
-                ligne = sr.ReadLine();  // On passe à la ligne 2 du fichier (la 1 ne nous intéresse pas)
+                ligne = sr1.ReadLine();  // On passe à la ligne 2 du fichier (la 1 ne nous intéresse pas)
 
-                while (ligne != null)   // Tant qu'on est pas à la fin, on boucle
+                for (i = 0; i < 4; ++i)
+                    anneeMinMax += ligne[i];
+
+                try { anneeMax = int.Parse(anneeMinMax); }
+                catch { messageErreur("Le format du fichier n'est pas valide.");}
+
+                anneeMinMax = "";
+
+                do
+                    ligne = sr1.ReadLine();
+                while (!sr1.EndOfStream);
+
+                for (i = 0; i < 4; ++i)
+                    anneeMinMax += ligne[i];
+
+                try { anneeMin = int.Parse(anneeMinMax); }
+                catch { messageErreur("Le format du fichier n'est pas valide."); }
+
+                sr1.Close();
+
+                prenoms = new Prenom[100 * (1 + anneeMax - anneeMin)];
+
+                sr2.ReadLine();
+
+                i = 0;
+
+                do   // Tant qu'on est pas à la fin, on boucle
                 {
+                    ligne = sr2.ReadLine();
+
                     /* Dans ce for, on va stocker dans donnees les 4 "mots" d'une ligne (année, prénom, ...) */
                     for (j = 0; j < ligne.Length; ++j)
                         if (!'\t'.Equals(ligne[j]))
@@ -75,6 +99,35 @@ namespace GuidePrenoms
                             mot = "";
                         }
 
+                    string accentAModifier = "";
+                    for (int k = 0; k < donnees[1].Length; ++k)
+                        if ('é'.Equals(donnees[1].ToLower()[k]))
+                            accentAModifier += 'E';
+                        else if ('è'.Equals(donnees[1].ToLower()[k]))
+                            accentAModifier += "E";
+                        else if ('ê'.Equals(donnees[1].ToLower()[k]))
+                            accentAModifier += "E";
+                        else if ('ï'.Equals(donnees[1].ToLower()[k]))
+                            accentAModifier += "I";
+                        else if ('î'.Equals(donnees[1].ToLower()[k]))
+                            accentAModifier += "I";
+                        else if ('ñ'.Equals(donnees[1].ToLower()[k]))
+                            accentAModifier += "N";
+                        else if ('à'.Equals(donnees[1].ToLower()[k]))
+                            accentAModifier += "A";
+                        else if ('â'.Equals(donnees[1].ToLower()[k]))
+                            accentAModifier += "A";
+                        else if ('ö'.Equals(donnees[1].ToLower()[k]))
+                            accentAModifier += "O";
+                        else if ('ô'.Equals(donnees[1].ToLower()[k]))
+                            accentAModifier += "O";
+                        else if ('ù'.Equals(donnees[1].ToLower()[k]))
+                            accentAModifier += "U"; 
+                        else
+                            accentAModifier += donnees[1][k];
+
+                    donnees[1] = accentAModifier;
+
                     /* On créé le prénom dans le tableau prenoms */
                     prenoms[i] = new Prenom()
                     {
@@ -84,13 +137,12 @@ namespace GuidePrenoms
                         ordre = int.Parse(donnees[3])
                     };
 
-                    /* On passe à la ligne suivante */
-                    ligne = sr.ReadLine();
                     ++i;
                 }
+                while (!sr2.EndOfStream);
 
                 /* On ferme le fichier */
-                sr.Close();
+                sr2.Close();
             }
             catch
             {
@@ -114,6 +166,25 @@ namespace GuidePrenoms
         }
         #endregion
         #region Affichage console
+        public static void debutProgramme()
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=");
+            Console.WriteLine("*               BIENVENUE DANS LE GUIDE DES PRENOMS DE BORDEAUX               *");
+            Console.WriteLine("=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=");
+            Console.WriteLine("*      Pour commencer, veuillez rentrer l'adresse de destination du fichier   *");
+            Console.WriteLine("*                              au format OpenData                             *");
+            Console.Write("*               Le fichier devra se nommer ");
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.Write("prenoms_bordeaux.txt");
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine("               *");
+            Console.WriteLine("=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=");
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine();
+            Console.WriteLine("Exemple : C:\\Users\\Toto\\Desktop");
+            Console.WriteLine();
+        }
         /* Méthode gérant l'affichage du menu principal */
         public static void menuPrincipal()
         {
@@ -152,6 +223,27 @@ namespace GuidePrenoms
 
             Console.Write("*");
             Console.ForegroundColor = ConsoleColor.White;
+            Console.Write(@" Tendance d'un prénom sur une période donnée            -> {0}                 ",
+                                (char)MODE.TENDANCE);
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("*");
+
+            Console.Write("*");
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.Write(@" Prénom le plus/moins donné dans la période du fichier  -> {0}                 ",
+                                (char)MODE.PRENOMPLUSMOINSDONNE);
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("*");
+
+            Console.Write("*");
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.Write(@" Liste des prénoms commençant par...                    -> {0}                 ",
+                                (char)MODE.MOTEURRECHERCHEPRENOM);
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("*");
+
+            Console.Write("*");
+            Console.ForegroundColor = ConsoleColor.White;
             Console.Write(@" Quitter                                                -> {0}                 ",
                                 (char)MODE.QUITTER);
             Console.ForegroundColor = ConsoleColor.Green;
@@ -159,14 +251,6 @@ namespace GuidePrenoms
 
             Console.WriteLine("===============================================================================");
             Console.ForegroundColor = ConsoleColor.White;
-        }
-
-        /* Méthode permettant de gérer la fin d'une fonctionnalité */
-        public static void finFonctionnalité()
-        {
-            Console.WriteLine("Appuyez sur une touche pour revenir au menu principal");
-            Console.ReadKey();
-            Console.Clear();
         }
 
         /* Méthode permettant de gérer l'affichage de la fonctionnalité */
@@ -199,6 +283,37 @@ namespace GuidePrenoms
             Console.ForegroundColor = ConsoleColor.White;
         }
 
+        /* Méthode permettant de gérer l'affichage de la fonctionnalité */
+        public static void tendancePrenomAffichage()
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("===============================================================================");
+            Console.WriteLine("*                    TENDANCE D'UN PRENOM SUR UNE PERIODE                     *");
+            Console.WriteLine("===============================================================================");
+            Console.ForegroundColor = ConsoleColor.White;
+        }
+
+        /* Méthode permettant de gérer l'affichage de la fonctionnalité */
+        public static void prenomPlusMoinsDonneAffichage()
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("===============================================================================");
+            Console.WriteLine("*                  PRENOM LE PLUS/MOINS DONNE SUR LA PERIODE                  *");
+            Console.WriteLine("===============================================================================");
+            Console.ForegroundColor = ConsoleColor.White;
+        }
+
+        /* Méthode permettant de gérer l'affichage de la fonctionnalité */
+        public static void moteurRecherchePrenomAffichage()
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("===============================================================================");
+            Console.WriteLine("*                        MOTEUR DE RECHERCHE DE PRENOM                        *");
+            Console.WriteLine("===============================================================================");
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine("\nEntrez une lettre ou un début de prénom, pour obtenir la liste : ");
+        }
+
         /* Méthode permettant de gérer l'affichage d'un message d'erreur */
         public static void messageErreur(string err)
         {
@@ -210,7 +325,7 @@ namespace GuidePrenoms
         #region Fonctionnalités
         /* Fonction permettant de gérer le TOP X de naissances sur une année donnée, 
          * et qui retourne les résultats sous forme de tableau */
-        public static Prenom[] topXNaissanceAnnee(Prenom[] prenoms, int top, bool top10)
+        public static Prenom[] topXNaissanceAnnee(Prenom[] prenoms, int top, bool top10, int anneeMin, int anneeMax)
         {
             int i = 0, indexResultat = 0;           // Index pour parcourir les tableaux
             Prenom[] resultat = new Prenom[top];    // Tableau de Prenom contenant les résultats
@@ -220,15 +335,15 @@ namespace GuidePrenoms
             if (top10)                              // On affiche le menu de la bonne fonctionnalité
             {
                 top10Affichage();
-                Console.WriteLine("Rentrez l'année du top 10 (1900 - 2013) : ");
+                Console.WriteLine("Rentrez l'année du top 10 ({0} - {1}) : ", anneeMin, anneeMax);
             }
             else
             {
                 nbNaissanceEtOrdreAnneeAffichage();
-                Console.WriteLine("Rentrez l'année (1900 - 2013) : ");
+                Console.WriteLine("Rentrez l'année ({0} - {1}) : ", anneeMin, anneeMax);
             }
 
-            int annee = rentrerAnnee();             // On rentre l'année
+            int annee = rentrerAnnee(anneeMin, anneeMax);             // On rentre l'année
 
             /* S'il n'y a pas eu d'erreur, on continue la fonctionnalité. 
              * Les prénoms du top X sont stockés dans resultat, et renvoyés */
@@ -253,30 +368,36 @@ namespace GuidePrenoms
 
         /* Fonction permettant de gérer le TOP X de naissances sur une période donnée, 
          * et qui retourne les résultats sous forme de tableau */
-        public static Prenom[] topXNaissancePeriode(Prenom[] prenoms, int top)
+        public static Prenom[] topXNaissancePeriode(Prenom[] prenoms, int top, bool periode, int anneeMin, int anneeMax)
         {
             Prenom[] resultat;                      // Tableau de Prenom contenant les résultats
+            int anneeD = 1900, anneeF = 2013;
 
             Console.Clear();                        // On vide la console
 
-            top10Affichage();
-            Console.WriteLine("Rentrez l'année de début du top 10 (1900 - 2013) : ");
+            if (periode)
+            {
+                top10Affichage();
+                Console.WriteLine("Rentrez l'année de début du top 10 ({0} - {1}) : ", anneeMin, anneeMax);
 
-            int anneeD = rentrerAnnee();             // On rentre l'année de début
+                anneeD = rentrerAnnee(anneeMin, anneeMax);             // On rentre l'année de début
 
-            Console.WriteLine("Rentrez l'année de fin du top 10 (1900 - 2013) : ");
+                Console.WriteLine("Rentrez l'année de fin du top 10 ({0} - {1}) : ", anneeMin, anneeMax);
 
-            int anneeF = rentrerAnnee();             // On rentre l'année
+                anneeF = rentrerAnnee(anneeMin, anneeMax);             // On rentre l'année
 
-            if (anneeD > anneeF)
-                echanger(ref anneeD, ref anneeF);
+                if (anneeD > anneeF)
+                    echanger(ref anneeD, ref anneeF);
+            }
 
             /* S'il n'y a pas eu d'erreur, on continue la fonctionnalité. 
              * Les prénoms du top X sont stockés dans resultat, et renvoyés */
             if (anneeD != -1 && anneeF != -1)
             {
                 resultat = recupererEtTrierPrenomsPeriode(prenoms, anneeD, anneeF);
-                afficherPrenomsTop10(resultat);
+
+                if (periode)
+                    afficherPrenomsTop10(resultat);
             }
             else
                 resultat = null;
@@ -287,27 +408,27 @@ namespace GuidePrenoms
 
         /* Méthode permettant de donner des informations sur un prénom dans l'année
          * souhaitée */
-        public static void nbNaissanceEtOrdreAnnee(Prenom[] prenoms)
+        public static void nbNaissanceEtOrdreAnnee(Prenom[] prenoms, int anneeMin, int anneeMax)
         {
             /* Ici, on a seulement besoin d'utiliser la recherche d'un prénom sur 
              * le top 100 d'une année */
-            rechercherPrenom(topXNaissanceAnnee(prenoms, 100, false), false);
+            rechercherPrenom(topXNaissanceAnnee(prenoms, 100, false, anneeMin, anneeMax), false);
         }
 
         /* Méthode permettant de donner des informations sur un prénom dans la période
          * souhaitée */
-        public static void nbNaissanceEtOrdrePeriode(Prenom[] prenoms)
+        public static void nbNaissanceEtOrdrePeriode(Prenom[] prenoms, int anneeMin, int anneeMax)
         {
             nbNaissanceEtOrdrePeriodeAffichage();
 
             Prenom[] prenomsPeriode;
             int anneeD, anneeF;
 
-            Console.WriteLine("Date de début :");
-            anneeD = rentrerAnnee();
+            Console.WriteLine("Date de début ({0} - {1}) : ", anneeMin, anneeMax);
+            anneeD = rentrerAnnee(anneeMin, anneeMax);
 
-            Console.WriteLine("Date de fin : ");
-            anneeF = rentrerAnnee();
+            Console.WriteLine("Date de fin ({0} - {1}) : ", anneeMin, anneeMax);
+            anneeF = rentrerAnnee(anneeMin, anneeMax);
 
             if (anneeD > anneeF)
                 echanger(ref anneeD, ref anneeF);
@@ -317,6 +438,104 @@ namespace GuidePrenoms
                 prenomsPeriode = recupererEtTrierPrenomsPeriode(prenoms, anneeD, anneeF);
                 rechercherPrenom(prenomsPeriode, true);     // On peut chercher un prénom dans ce tableau
             }
+        }
+
+        public static void tendancePrenomPeriode(Prenom[] prenoms, int anneeMin, int anneeMax)
+        {
+            tendancePrenomAffichage();
+
+            string prenom;
+            int anneeD, anneeF, cptPeriodeAvant = 0, cptPeriode = 0;
+            double moyennePeriodeAvant = 0, moyennePeriode = 0, variance = 0, ecartType, ecartMoyenne;
+
+            Console.WriteLine("Date de début ({0} - {1}) : ", anneeMin + 1, anneeMax);
+            anneeD = rentrerAnnee(anneeMin, anneeMax);
+
+            Console.WriteLine("Date de fin ({0} - {1}) : ", anneeMin + 1, anneeMax);
+            anneeF = rentrerAnnee(anneeMin, anneeMax);
+
+            if (anneeD > anneeF)
+                echanger(ref anneeD, ref anneeF);
+
+            Console.WriteLine("Rentrez le prénom souhaité : ");
+            prenom = Console.ReadLine().ToUpper();
+
+            foreach (Prenom p in prenoms)
+            {
+                if (p.prenom.Equals(prenom))
+                {
+                    if (p.annee < anneeD)
+                    {
+                        moyennePeriodeAvant += p.nombre;
+                        ++cptPeriodeAvant;
+                        variance += Math.Pow(p.nombre, 2);
+                    }
+                    else 
+                        if (p.annee >= anneeD && p.annee <= anneeF)
+                        {
+                            moyennePeriode += p.nombre;
+                            ++cptPeriode;
+                        }
+                }
+            }
+
+            if (moyennePeriodeAvant != 0)
+                moyennePeriodeAvant /= cptPeriodeAvant;
+
+            if (moyennePeriode != 0)
+                moyennePeriode /= cptPeriode;
+
+            variance = (variance - Math.Pow(moyennePeriodeAvant, 2) * cptPeriodeAvant) / cptPeriodeAvant;
+            ecartType = Math.Sqrt(variance);
+
+            ecartMoyenne = moyennePeriode - moyennePeriodeAvant;
+
+            if (ecartMoyenne <= -2 * ecartType)
+                Console.WriteLine("Ce prénom est à l'abandon");
+            else if (-2 * ecartType < ecartMoyenne && ecartMoyenne < -ecartType)
+                Console.WriteLine("Ce prénom est désuet");
+            else if (-ecartType <= ecartMoyenne && ecartMoyenne <= ecartType)
+                Console.WriteLine("Ce prénom se maintient");
+            else if (ecartType < ecartMoyenne && ecartMoyenne < 2 * ecartType)
+                Console.WriteLine("Ce prénom est en vogue");
+            else if (2 * ecartType <= ecartMoyenne)
+                Console.WriteLine("Bravo, ce prénom explose !!!!! :D");
+        }
+
+        public static void prenomPlusMoinsDonne(Prenom[] prenoms, int anneeMin, int anneeMax)
+        {
+            Prenom[] resultat = topXNaissancePeriode(prenoms, prenoms.Length, false, anneeMin, anneeMax);
+
+            prenomPlusMoinsDonneAffichage();
+
+            Console.WriteLine("Le prénom le plus donné sur la période du fichier est {0},\nqui a été donné {1} fois !\n",
+                            resultat[0].prenom, resultat[0].nombre);
+            Console.WriteLine("Le prénom le moins donné sur la période du fichier est {0},\nqui a été donné {1} fois !\n",
+                            resultat[resultat.Length - 1].prenom,
+                            resultat[resultat.Length - 1].nombre); 
+        }
+
+        public static void moteurRecherchePrenom(Prenom[] prenoms, int anneeMin, int anneeMax)
+        {
+            moteurRecherchePrenomAffichage();
+
+            string debutPrenom = Console.ReadLine().ToUpper();
+            Prenom[] resultats = recupererEtTrierPrenomsPeriode(prenoms, anneeMin, anneeMax);
+
+            resultats = prenomCommencePar(resultats, debutPrenom);
+            triAlphabetique(resultats);
+
+            foreach (Prenom p in resultats)
+            {
+                Console.WriteLine(p.prenom);
+            }
+        }
+
+        /* TODO : choix du prénom : donne la position dans le top 10 de chaque année (1960 : 3e, 1965 : 4e)
+         * Donne le nombre de fois qu'il a été donné sur la période totale */
+        public static void informationPrenom(Prenom[] prenoms)
+        {
+
         }
         #endregion
         #region Fonctions autres
@@ -334,12 +553,15 @@ namespace GuidePrenoms
             if (c == 'y' || c == 'Y')
                 return true;
             else
+            {
+                Console.Clear();
                 return false;
+            }
         }
 
 
         /* Fonction permettant de rentrer une année */
-        public static int rentrerAnnee()
+        public static int rentrerAnnee(int anneeMin, int anneeMax)
         {
             int annee;
             bool premiereValeur = true;
@@ -353,11 +575,11 @@ namespace GuidePrenoms
                         premiereValeur = false;
                     else
                     {
-                        messageErreur("La date n'est pas comprise entre " + ANNEEMIN + " et " + 2013);
+                        messageErreur("La date n'est pas comprise entre " + anneeMin + " et " + anneeMax);
                     }
                     annee = int.Parse(Console.ReadLine());
                 }
-                while (annee > 2013 || annee < ANNEEMIN);
+                while (annee > anneeMax || annee < anneeMin);
             }
             catch
             {
@@ -420,8 +642,7 @@ namespace GuidePrenoms
         }
 
         /* Réécriture du StartsWith(string), méthode disponible pour les types string
-         * str1 : morceau de chaîne à comparer
-         * str2 : chaîne complète */
+         * On ne savait pas si on avait le droit de l'utiliser */
         public static bool startsWith(string morceau, string chaineEntiere)
         {
             bool res = true;
@@ -446,8 +667,7 @@ namespace GuidePrenoms
 
         /* Réécriture du Contains(string), méthode disponible pour les tableaux de string,
          * mais adaptée à notre cas
-         * prenoms : tableau contenant les prénoms
-         * prenom : prénom */
+         * On ne savait pas si on avait le droit de l'utiliser */
         public static bool containsPrenom(Prenom[] prenoms, Prenom prenom)
         {
             bool res = false;
@@ -464,12 +684,12 @@ namespace GuidePrenoms
          * par chaîne de caractère donnée */
         public static Prenom[] prenomCommencePar(Prenom[] prenoms, string str)
         {
-            Prenom[] resultatTmp = new Prenom[1000], resultat;
+            Prenom[] resultatTmp = new Prenom[prenoms.Length], resultat;
             int nb = -1;
 
             foreach (Prenom p in prenoms)
             {
-                if (startsWith(str, p.prenom))   //p.prenom.StartsWith(str)
+                if (startsWith(str, p.prenom))
                 {
                     resultatTmp[++nb] = p;
                 }
@@ -570,13 +790,58 @@ namespace GuidePrenoms
 
             return resultat;
         }
+
+        public static void triAlphabetique(Prenom[] prenoms)
+        {
+            bool termine = false, echangeOk = false;
+            int i = 1, indexString = 0;
+
+            while (!termine)
+            {
+                termine = true;
+                while (i < prenoms.Length)
+                {
+                    echangeOk = false;
+                    while (indexString < prenoms[i - 1].prenom.Length && indexString < prenoms[i].prenom.Length && !echangeOk)
+                    {
+                        if (prenoms[i - 1].prenom[indexString] > prenoms[i].prenom[indexString])
+                        {
+                            Prenom p = prenoms[i - 1];
+                            prenoms[i - 1] = prenoms[i];
+                            prenoms[i] = p;
+                            echangeOk = true;
+                            termine = false;
+                        }
+                        else if (prenoms[i - 1].prenom[indexString] < prenoms[i].prenom[indexString])
+                            echangeOk = true;
+
+                        ++indexString;
+                    }
+                    ++i;
+                    indexString = 0;
+                }
+                i = 1;
+            }
+        }
         #endregion
 
         static void Main(string[] args)
         {
-            Prenom[] prenoms = lectureFichier();    // Les données du fichier texte
-            bool quitter = false;                   // C'est lui qui va arrêter le programme
-            char c;                                 // Permet de sélectionner la fonctionnalité
+            debutProgramme();
+
+            string adresseFichier = Console.ReadLine();
+
+            Console.WriteLine("Nom du fichier : (sans l'extension -> prenoms_bordeaux par exemple) : ");
+            string nomFichier = Console.ReadLine();
+
+            int anneeMin = 0, anneeMax = 0;
+
+            Prenom[] prenoms = lectureFichier(adresseFichier, nomFichier, ref anneeMin, ref anneeMax);      // Les données du fichier texte
+            bool quitter = false;                                   // C'est lui qui va arrêter le programme
+            char c;                                                 // Permet de sélectionner la fonctionnalité
+
+            if (prenoms != null)
+                Console.Clear();
 
             while (!quitter && prenoms != null)
             {
@@ -590,40 +855,63 @@ namespace GuidePrenoms
                         do
                         {
                             Console.Clear();
-                            topXNaissanceAnnee(prenoms, 10, true);
+                            topXNaissanceAnnee(prenoms, 10, true, anneeMin, anneeMax);
                         }
                         while (recommencerFonctionnalité());
-                        finFonctionnalité();
                         break;
 
                     case (char) MODE.TOP10PERIODE:
                         do
                         {
                             Console.Clear();
-                            topXNaissancePeriode(prenoms, 10);
+                            topXNaissancePeriode(prenoms, 10, true, anneeMin, anneeMax);
                         }
                         while (recommencerFonctionnalité());
-                        finFonctionnalité();
                         break;
 
                     case (char) MODE.NAISSANCEETORDREANNEE:
                         do
                         {
                             Console.Clear();
-                            nbNaissanceEtOrdreAnnee(prenoms);
+                            nbNaissanceEtOrdreAnnee(prenoms, anneeMin, anneeMax);
                         }
                         while (recommencerFonctionnalité());
-                        finFonctionnalité();
                         break;
 
                     case (char) MODE.NAISSANCEETORDREPERIODE:
                         do
                         {
                             Console.Clear();
-                            nbNaissanceEtOrdrePeriode(prenoms);
+                            nbNaissanceEtOrdrePeriode(prenoms, anneeMin, anneeMax);
                         }
                         while (recommencerFonctionnalité());
-                        finFonctionnalité();
+                        break;
+
+                    case (char) MODE.TENDANCE:
+                        do
+                        {
+                            Console.Clear();
+                            tendancePrenomPeriode(prenoms, anneeMin, anneeMax);
+                        }
+                        while (recommencerFonctionnalité());
+                        break;
+
+                    case (char)MODE.PRENOMPLUSMOINSDONNE:
+                        do
+                        {
+                            Console.Clear();
+                            prenomPlusMoinsDonne(prenoms, anneeMin, anneeMax);
+                        }
+                        while (recommencerFonctionnalité());
+                        break;
+
+                    case (char)MODE.MOTEURRECHERCHEPRENOM:
+                        do
+                        {
+                            Console.Clear();
+                            moteurRecherchePrenom(prenoms, anneeMin, anneeMax);
+                        }
+                        while (recommencerFonctionnalité());
                         break;
 
                     case (char) MODE.QUITTER:
