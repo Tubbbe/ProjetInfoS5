@@ -10,6 +10,7 @@ namespace GuidePrenoms
     class GuidePrenomsApp
     {
         #region Enums
+        /* Enum permettant de gérer l'appel des fonctionnalités depuis le menu */
         public enum MODE
         {
             TOP10ANNEE = '1',
@@ -19,6 +20,7 @@ namespace GuidePrenoms
             TENDANCE = '5',
             PRENOMPLUSMOINSDONNE = '6',
             MOTEURRECHERCHEPRENOM = '7',
+            INFORMATIONPRENOM = '8',
             QUITTER = 'q'
         }
         #endregion
@@ -177,7 +179,7 @@ namespace GuidePrenoms
             Console.Write("*               Le fichier devra se nommer ");
             Console.ForegroundColor = ConsoleColor.Red;
             Console.Write("prenoms_bordeaux.txt");
-            Console.ForegroundColor = ConsoleColor.White;
+            Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("               *");
             Console.WriteLine("=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=");
             Console.ForegroundColor = ConsoleColor.White;
@@ -239,6 +241,13 @@ namespace GuidePrenoms
             Console.ForegroundColor = ConsoleColor.White;
             Console.Write(@" Liste des prénoms commençant par...                    -> {0}                 ",
                                 (char)MODE.MOTEURRECHERCHEPRENOM);
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("*");
+
+            Console.Write("*");
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.Write(@" Plus d'informations sur un prénom                      -> {0}                 ",
+                                (char)MODE.INFORMATIONPRENOM);
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("*");
 
@@ -309,6 +318,17 @@ namespace GuidePrenoms
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("===============================================================================");
             Console.WriteLine("*                        MOTEUR DE RECHERCHE DE PRENOM                        *");
+            Console.WriteLine("===============================================================================");
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine("\nEntrez une lettre ou un début de prénom, pour obtenir la liste : ");
+        }
+
+        /* Méthode permettant de gérer l'affichage de la fonctionnalité */
+        public static void informationPrenomAffichage()
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("===============================================================================");
+            Console.WriteLine("*                        INFORMATIONS SUR UN PRENOM                           *");
             Console.WriteLine("===============================================================================");
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("\nEntrez une lettre ou un début de prénom, pour obtenir la liste : ");
@@ -537,11 +557,64 @@ namespace GuidePrenoms
             }
         }
 
-        /* TODO : choix du prénom : donne la position dans le top 10 de chaque année (1960 : 3e, 1965 : 4e)
-         * Donne le nombre de fois qu'il a été donné sur la période totale */
-        public static void informationPrenom(Prenom[] prenoms)
-        {
 
+        public static void informationPrenom(Prenom[] prenoms, int anneeMin, int anneeMax)
+        {
+            informationPrenomAffichage();
+
+            bool easterEgg = true;
+            int i = 0, cpt = 0;
+            Prenom[] listeResultats = new Prenom[prenoms.Length];
+            Console.WriteLine("Rentrez le prénom souhaité : ");
+            string prenom = Console.ReadLine().ToUpper();
+
+            foreach (Prenom p in prenoms)
+                if (p.prenom.Equals(prenom))
+                    listeResultats[i++] = p;
+
+            Console.WriteLine("\n" + prenom + " : \n");
+            for (i = 0; i < listeResultats.Length; ++i)
+            {
+                #region Easter egg
+                if (("EDWIGE".Equals(prenom) || "PIERRE-ALEXANDRE".Equals(prenom)) && easterEgg)
+                {
+                    Console.WriteLine("Ah que coucou <3");
+                    easterEgg = false;
+                    Console.WriteLine(@"   _______________          |*\_/*|________");
+                    Console.WriteLine(@"  |  ___________  |        ||_/-\_|______  |");
+                    Console.WriteLine(@"  | |           | |        | |           | |");
+                    Console.WriteLine(@"  | |   0   0   | |        | |   0   0   | |");
+                    Console.WriteLine(@"  | |     -     | |        | |     -     | |");
+                    Console.WriteLine(@"  | |   \___/   | |        | |   \___/   | |");
+                    Console.WriteLine(@"  | |___     ___| |        | |___________| |");
+                    Console.WriteLine(@"  |_____|\_/|_____|        |_______________|");
+                    Console.WriteLine(@"    _|__|/ \|_|_.............._|________|_");
+                    Console.WriteLine(@"   / ********** \            / ********** \");
+                    Console.WriteLine(@" /  ************  \        /  ************  \");
+                    Console.WriteLine(@"--------------------      --------------------");
+                }
+                #endregion
+
+                if (listeResultats[i].annee != 0)
+                {
+                    if (listeResultats[i].ordre < 11)
+                    {
+                        if (listeResultats[i].ordre == 1)
+                            Console.ForegroundColor = ConsoleColor.Yellow;
+                        else if (listeResultats[i].ordre == 2)
+                            Console.ForegroundColor = ConsoleColor.Gray;
+                        else if (listeResultats[i].ordre == 3)
+                            Console.ForegroundColor = ConsoleColor.DarkRed;
+                        else
+                            Console.ForegroundColor = ConsoleColor.White;
+                        Console.WriteLine("- {0}e de l'année {1}, donné {2} fois",
+                                            listeResultats[i].ordre, listeResultats[i].annee, listeResultats[i].nombre);
+                    }
+                    cpt += listeResultats[i].nombre;
+                }
+            }
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine("Il a été donné {0} fois sur la période de {1} à {2}\n\n", cpt, anneeMin, anneeMax);
         }
         #endregion
         #region Fonctions autres
@@ -842,7 +915,8 @@ namespace GuidePrenoms
 
             int anneeMin = 0, anneeMax = 0;
 
-            Prenom[] prenoms = lectureFichier(adresseFichier, nomFichier, ref anneeMin, ref anneeMax);      // Les données du fichier texte
+            // Les données du fichier texte
+            Prenom[] prenoms = lectureFichier(adresseFichier, nomFichier, ref anneeMin, ref anneeMax);
             bool quitter = false;                                   // C'est lui qui va arrêter le programme
             char c;                                                 // Permet de sélectionner la fonctionnalité
 
@@ -916,6 +990,15 @@ namespace GuidePrenoms
                         {
                             Console.Clear();
                             moteurRecherchePrenom(prenoms, anneeMin, anneeMax);
+                        }
+                        while (recommencerFonctionnalité());
+                        break;
+
+                    case (char)MODE.INFORMATIONPRENOM:
+                        do
+                        {
+                            Console.Clear();
+                            informationPrenom(prenoms, anneeMin, anneeMax);
                         }
                         while (recommencerFonctionnalité());
                         break;
