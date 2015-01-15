@@ -131,7 +131,7 @@ namespace GuidePrenoms
         }
         #endregion
         #region Affichage tableaux
-        /* Méthode permettant d'afficher les prénoms du tableau sous la forme "TOP X" */
+        /* Méthode permettant d'afficher les prénoms du tableau sous la forme "TOP <valeur>" */
         public static void afficherPrenomsTop10(Prenom[] prenoms) {
             Console.WriteLine("\n");
             if (prenoms.Length >= 10)
@@ -488,7 +488,7 @@ namespace GuidePrenoms
                 messageErreur("Aucune information n'est disponible pour ce prénom");
         }
 
-        /* Méthode permettant de donner le prénom le plus donné, et le prénom le moins donné */
+        /* Méthode permettant d'afficher le prénom le plus donné, et le prénom le moins donné */
         public static void prenomPlusMoinsDonne(Prenom[] prenoms, int anneeMin, int anneeMax) {
             Prenom[] resultat = topXNaissancePeriode(prenoms, prenoms.Length, false, anneeMin, anneeMax); // On a besoin de tous les prénoms SANS doublon
 
@@ -503,7 +503,7 @@ namespace GuidePrenoms
             }
         }
 
-        /* Méthode permettant à l'utilisateur de rechercher un prénom dans le tableau donné en paramètre */
+        /* Méthode permettant à l'utilisateur de rechercher un prénom dans le tableau */
         public static void moteurRecherchePrenom(Prenom[] prenoms, int anneeMin, int anneeMax) {
             moteurRecherchePrenomAffichage();
 
@@ -659,7 +659,7 @@ namespace GuidePrenoms
         }
 
         /* Ici, on va demander à l'utilisateur de rentrer un prénom,
-         * afin d'avoir les informations sur celui-ci pour l'année donnée.
+         * afin d'avoir les informations sur celui-ci pour l'année/la période donnée.
          * Si celui-ci n'existe pas, on affiche la liste des prénoms
          * commençant par la chaîne rentrée */
         public static void rechercherPrenom(Prenom[] prenoms, bool periode) {
@@ -667,7 +667,7 @@ namespace GuidePrenoms
             bool premierPassage = true;
             Prenom[] commencerPar;
             string prenom = "";
-
+            
             Console.WriteLine("Rentrez le prénom souhaité : ");
 
             do {
@@ -710,12 +710,12 @@ namespace GuidePrenoms
                                                                             p.annee, p.nombre);
         }
 
-        /* Réécriture du StartsWith(string), méthode disponible pour les types string
+        /* Réécriture du StartsWith(...), méthode disponible pour les types string
          * On ne savait pas si on avait le droit de l'utiliser */
         public static bool startsWith(string morceau, string chaineEntiere) {
             bool res = true;
             int i = 0;
-
+            
             if (!(morceau == null || chaineEntiere == null)) {
                 if (morceau.Length > chaineEntiere.Length)
                     return false;
@@ -731,7 +731,7 @@ namespace GuidePrenoms
                 return false;
         }
 
-        /* Réécriture du Contains(string), méthode disponible pour les tableaux de string,
+        /* Réécriture du Contains(...), méthode disponible pour les tableaux,
          * mais adaptée à notre cas
          * On ne savait pas si on avait le droit de l'utiliser */
         public static bool containsPrenom(Prenom[] prenoms, Prenom prenom) {
@@ -805,6 +805,43 @@ namespace GuidePrenoms
             }
         }
 
+        /* Méthode permettant de trier un tableau de Prenom par ordre alphabétique */
+        public static void triAlphabetique(Prenom[] prenoms)
+        {
+            bool termine = false, echangeOk = false;
+            int i = 1, indexString = 0;
+
+            /* Tri utilisé : tri à bulles */
+            while (!termine)
+            {
+                termine = true;
+                while (i < prenoms.Length)
+                {
+                    echangeOk = false;
+                    while (indexString < prenoms[i - 1].prenom.Length &&
+                            indexString < prenoms[i].prenom.Length && !echangeOk)
+                    {
+                        if (prenoms[i - 1].prenom[indexString] > prenoms[i].prenom[indexString])
+                        {
+                            Prenom p = prenoms[i - 1];
+                            prenoms[i - 1] = prenoms[i];
+                            prenoms[i] = p;
+                            echangeOk = true;
+                            termine = false;
+                        }
+                        else
+                            if (prenoms[i - 1].prenom[indexString] < prenoms[i].prenom[indexString])
+                                echangeOk = true;
+
+                        ++indexString;
+                    }
+                    ++i;
+                    indexString = 0;
+                }
+                i = 1;
+            }
+        }
+
         /* Fonction permettant de récupérer les prénoms d'une période (triés par nombre) */
         public static Prenom[] recupererEtTrierPrenomsPeriode(Prenom[] prenoms, int anneeD, int anneeF) {
             Prenom[] prenomsPeriodeTmp, resultat;
@@ -835,38 +872,6 @@ namespace GuidePrenoms
             }
 
             return resultat;
-        }
-
-        /* Méthode permettant de trier un tableau de Prenom par ordre alphabétique */
-        public static void triAlphabetique(Prenom[] prenoms) {
-            bool termine = false, echangeOk = false;
-            int i = 1, indexString = 0;
-
-            /* Tri utilisé : tri à bulles */
-            while (!termine) {
-                termine = true;
-                while (i < prenoms.Length) {
-                    echangeOk = false;
-                    while (indexString < prenoms[i - 1].prenom.Length && 
-                            indexString < prenoms[i].prenom.Length && !echangeOk) {
-                        if (prenoms[i - 1].prenom[indexString] > prenoms[i].prenom[indexString]) {
-                            Prenom p = prenoms[i - 1];
-                            prenoms[i - 1] = prenoms[i];
-                            prenoms[i] = p;
-                            echangeOk = true;
-                            termine = false;
-                        }
-                        else 
-                            if (prenoms[i - 1].prenom[indexString] < prenoms[i].prenom[indexString])
-                                echangeOk = true;
-
-                        ++indexString;
-                    }
-                    ++i;
-                    indexString = 0;
-                }
-                i = 1;
-            }
         }
         #endregion
 
