@@ -345,8 +345,7 @@ namespace GuidePrenoms
 
         /* Fonction permettant de gérer le TOP X de naissances sur une période donnée, 
          * et qui retourne les résultats sous forme de tableau */
-        public static Prenom[] topXNaissancePeriode(Prenom[] prenoms, int top, bool periode, int anneeMin, int anneeMax)
-        {
+        public static Prenom[] topXNaissancePeriode(Prenom[] prenoms, int top, bool periode, int anneeMin, int anneeMax) {
             Prenom[] resultat;                      // Tableau de Prenom contenant les résultats
             int anneeD = anneeMin, anneeF = anneeMax;
 
@@ -429,13 +428,13 @@ namespace GuidePrenoms
             int anneeD, anneeF, cptPeriodeAvant = 0, cptPeriode = 0;
             double moyennePeriodeAvant = 0, moyennePeriode = 0, variance = 0, ecartType = 0, ecartMoyenne = 0;
 
-            Console.WriteLine("Date de début ({0} - {1}) : ", anneeMin + 1, anneeMax);
+            Console.WriteLine("Date de début ({0} - {1}) : ", anneeMin, anneeMax);
 
             do
                 anneeD = rentrerAnnee(anneeMin, anneeMax);             // On rentre l'année de début
             while (anneeD == -1);
 
-            Console.WriteLine("Date de fin ({0} - {1}) : ", anneeMin + 1, anneeMax);
+            Console.WriteLine("Date de fin ({0} - {1}) : ", anneeMin, anneeMax);
 
             do
                 anneeF = rentrerAnnee(anneeMin, anneeMax);             // On rentre l'année de fin
@@ -445,11 +444,11 @@ namespace GuidePrenoms
                 echanger(ref anneeD, ref anneeF);
 
             Console.WriteLine("Rentrez le prénom souhaité : ");
-            prenom = Console.ReadLine().ToUpper();
+            prenom = enleverLesAccents(Console.ReadLine().ToUpper());
 
             /* Calcul des moyennes et de la variance pour les deux périodes */
             foreach (Prenom p in prenoms)
-                if (p.prenom.Equals(prenom))
+                if (p.prenom != null && p.prenom.Equals(prenom))
                     if (p.annee < anneeD) {
                         moyennePeriodeAvant += p.nombre;
                         ++cptPeriodeAvant;
