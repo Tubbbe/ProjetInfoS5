@@ -507,7 +507,7 @@ namespace GuidePrenoms
         public static void moteurRecherchePrenom(Prenom[] prenoms, int anneeMin, int anneeMax) {
             moteurRecherchePrenomAffichage();
 
-            string debutPrenom = Console.ReadLine().ToUpper();
+            string debutPrenom = enleverLesAccents(Console.ReadLine().ToUpper());
             Prenom[] resultats = null;
 
             /* On récupère les prénoms qui commencent par la chaîne rentrée, parmi la liste de prénoms
@@ -531,7 +531,7 @@ namespace GuidePrenoms
             Prenom[] listeResultats = new Prenom[prenoms.Length];
 
             Console.WriteLine("Rentrez le prénom souhaité : ");
-            string prenom = Console.ReadLine().ToUpper();
+            string prenom = enleverLesAccents(Console.ReadLine().ToUpper());
 
             /* A chaque fois qu'on va rencontrer le prénom, on le rajoute dans le tableau */
             foreach (Prenom p in prenoms)
@@ -692,7 +692,7 @@ namespace GuidePrenoms
                 else
                     premierPassage = false;
 
-                prenom = Console.ReadLine().ToUpper();
+                prenom = enleverLesAccents(Console.ReadLine().ToUpper());
 
                 for (int i = 0; i < prenoms.Length; ++i)
                     if (prenoms[i].prenom.Equals(prenom))
